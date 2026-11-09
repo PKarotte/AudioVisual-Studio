@@ -19,7 +19,7 @@ AudioVisual Studio is a Work-in-Progress open-source visual synthesizer and moti
 
 ---
 
-## ✨ Features
+## Features
 
 - **Multiple GPU Visual Simulations**:
   - **Eulerian Fluid Dynamics (Stable Fluids)**: Incompressible Navier-Stokes solver with semi-Lagrangian advection, Jacobi pressure projection, vorticity confinement, and 3D analytical curl-noise turbulence.
@@ -52,7 +52,7 @@ AudioVisual Studio is a Work-in-Progress open-source visual synthesizer and moti
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
 ### 1. Requirements
 
@@ -80,7 +80,7 @@ python run.py
 
 ---
 
-## 🎛️ How to Use
+## How to Use
 
 1. **Load Music**: Click the **Audio Stems** tab on the right sidebar and load one or more audio files (`.wav`, `.mp3`, `.flac`). You can also click **Split Loaded Track Into 6 Frequency Bands** to automatically create frequency-isolated modulation sources.
 2. **Place Spawners**: In the **Spawners** tab or **Spawner Placement & Grid** view, create and position fluid nozzles. Assign each spawner to an audio stem or let them react to the master mix.
@@ -90,7 +90,7 @@ python run.py
 
 ---
 
-## 🏛️ Architecture & Acknowledgments
+## Architecture & Acknowledgments
 
 - **Jos Stam**: *Stable Fluids* (SIGGRAPH 1999) — Unconditionally stable semi-Lagrangian advection algorithm.
 - **Pavel Dobryakov**: WebGL Fluid simulation shader pipeline inspiration.
@@ -99,6 +99,6 @@ python run.py
 
 ---
 
-## 📄 License
+## License
 
 This project is licensed under the [MIT License](LICENSE).
