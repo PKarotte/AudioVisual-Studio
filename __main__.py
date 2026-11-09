@@ -1,0 +1,54 @@
+"""
+Executable entry point for Liquid Studio.
+Enables running via:
+  python run.py  (from inside LiquidStudio folder)
+  python -m LiquidStudio (from parent AudioVisual folder)
+"""
+import sys
+import os
+
+# Ensure root (parent of LiquidStudio) is on sys.path
+root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if root_dir not in sys.path:
+    sys.path.insert(0, root_dir)
+
+from PySide6.QtWidgets import QApplication
+from PySide6.QtCore import Qt
+from PySide6.QtGui import QPalette, QColor
+
+from LiquidStudio.gui.main_window import MainWindow
+
+
+def setup_dark_theme(app: QApplication):
+    """Sets a clean, dark aesthetic suitable for music visualizer studios."""
+    app.setStyle("Fusion")
+    dark_palette = QPalette()
+    dark_palette.setColor(QPalette.Window, QColor("#14171d"))
+    dark_palette.setColor(QPalette.WindowText, QColor("#d0d4dc"))
+    dark_palette.setColor(QPalette.Base, QColor("#1c2027"))
+    dark_palette.setColor(QPalette.AlternateBase, QColor("#222730"))
+    dark_palette.setColor(QPalette.ToolTipBase, QColor("#ffffff"))
+    dark_palette.setColor(QPalette.ToolTipText, QColor("#ffffff"))
+    dark_palette.setColor(QPalette.Text, QColor("#e0e4ec"))
+    dark_palette.setColor(QPalette.Button, QColor("#232832"))
+    dark_palette.setColor(QPalette.ButtonText, QColor("#d0d4dc"))
+    dark_palette.setColor(QPalette.BrightText, Qt.red)
+    dark_palette.setColor(QPalette.Link, QColor("#4488ff"))
+    dark_palette.setColor(QPalette.Highlight, QColor("#3066a3"))
+    dark_palette.setColor(QPalette.HighlightedText, Qt.white)
+    app.setPalette(dark_palette)
+
+
+def main():
+    QApplication.setHighDpiScaleFactorRoundingPolicy(Qt.HighDpiScaleFactorRoundingPolicy.PassThrough)
+    app = QApplication(sys.argv)
+    setup_dark_theme(app)
+
+    window = MainWindow()
+    window.show()
+
+    sys.exit(app.exec())
+
+
+if __name__ == "__main__":
+    main()

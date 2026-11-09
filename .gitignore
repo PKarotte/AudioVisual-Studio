@@ -1,0 +1,39 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.spec
+
+# Audio analysis cache
+.cache/
+
+# User audio files (keep repo clean and respect audio copyright)
+*.mp3
+*.wav
+*.flac
+*.ogg
+*.aif
+*.aiff
+
+# Video exports & temporary render files
+*.mp4
+*.mov
+*.avi
+*.mkv
+Fluid_Export.mp4
+test_*.mp4
+
+# Operating System & IDE artifacts
+.DS_Store
+Thumbs.db
+*.log
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Virtual environments
+venv/
+.venv/
+env/
+ENV/
