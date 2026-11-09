@@ -50,7 +50,7 @@ AudioVisual Studio is an open-source visual synthesizer and motion graphics tool
 Clone this repository and install the Python dependencies:
 
 ```bash
-git clone https://github.com/<your-username>/AudioVisual-Studio.git
+git clone https://github.com/PKarotte/AudioVisual-Studio.git
 cd AudioVisual-Studio
 pip install -r requirements.txt
 ```
