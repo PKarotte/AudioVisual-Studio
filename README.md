@@ -10,11 +10,11 @@ AudioVisual Studio is a Work-in-Progress open-source visual synthesizer and moti
 
 ---
 
-## 🎬 Showcase
+## Showcase
 
 [![Inward — Audio-Reactive GPU Fluid Simulation](https://img.youtube.com/vi/UxZVmMNwRcY/maxresdefault.jpg)](https://www.youtube.com/watch?v=UxZVmMNwRcY)
 
-> 🎥 **[Watch the full showcase on YouTube](https://www.youtube.com/watch?v=UxZVmMNwRcY)**  
+>  **[Watch the full showcase on YouTube](https://www.youtube.com/watch?v=UxZVmMNwRcY)**  
 > *"Inward" — Music by Daniela Helten & Pascal Karitter, visualized in real time with AudioVisual Studio.*
 
 ---
