@@ -6,7 +6,7 @@
 [![OpenGL 3.3+](https://img.shields.io/badge/OpenGL-3.3+-5586a4.svg?logo=opengl)](https://opengl.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-AudioVisual Studio is an open-source visual synthesizer and motion graphics tool that transforms multi-track music and audio stems into fluid dynamics. Built with Python, ModernGL (OpenGL 3.3+), and PySide6 (Qt).
+AudioVisual Studio is a Work-in-Progress open-source visual synthesizer and motion graphics tool that transforms multi-track music and audio stems into fluid dynamics. Built with Python, ModernGL (OpenGL 3.3+), and PySide6 (Qt).
 
 ---
 
