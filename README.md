@@ -21,8 +21,14 @@ AudioVisual Studio is a Work-in-Progress open-source visual synthesizer and moti
 
 ## ✨ Features
 
-- **Incompressible Navier-Stokes Solver**: Real-time Eulerian grid fluid solver based on Jos Stam's unconditionally stable semi-Lagrangian advection and GPU Jacobi pressure projection.
-- **Vorticity Confinement & Curl Turbulence**: Injects fine rotational swirls and analytical 3D curl-noise to preserve micro-eddies and turbulent smoke filaments.
+- **Multiple GPU Visual Simulations**:
+  - **Eulerian Fluid Dynamics (Stable Fluids)**: Incompressible Navier-Stokes solver with semi-Lagrangian advection, Jacobi pressure projection, vorticity confinement, and 3D analytical curl-noise turbulence.
+  - **2D Wave Tank & Acoustic Cymatics**: Physical shallow-water wave tank with harmonic acoustic oscillators, standing wave interference, Chladni nodal sand patterns, caustics, and specular Fresnel reflections.
+  - **Physarum Slime Mold Network**: Continuous chemotaxis transport network inspired by *Physarum polycephalum*, simulating vein canalization, nutrient foraging, and multi-stem bioluminescent mycelium branching.
+  - **Reaction-Diffusion (Gray-Scott)**: Turing pattern synthesis morphing between spots, coral, mitosis, labyrinth mazes, and organic cell division.
+- **Background Image Underlay & Blending**:
+  - Load custom background artwork (`.png`, `.jpg`, `.webp`, `.bmp`) to place behind or blend with the simulations.
+  - Real-time controls for opacity, aspect ratio fitting (*Cover*, *Fit*, *Stretch*), and blend modes (*Underlay*, *Screen*, *Add*, *Multiply*).
 - **Multi-Stem Audio Analysis**:
   - Automatically extracts 22 audio features per stem (RMS volume, onset transients, beat pulses, pitch F0, spectral centroid, brightness, rolloff, etc.).
   - Built-in filter bank to split any loaded stereo track into 6 frequency bands (Sub, Low, Low-Mid, Mid, High, Air).

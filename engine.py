@@ -72,6 +72,8 @@ class Engine:
             self.post.ensure(w, h)
             self.post.clear()
             self._sig = sig
+        if self.project.bg_image_path != self.post.bg_path:
+            self.post.set_background(self.project.bg_image_path)
 
     # ------------------------------------------------------------------
     def _spawner_frames(self, t: float, dt: float, sp_vals: dict) -> list[SpawnerFrame]:

@@ -1,6 +1,9 @@
 """Post-processing shared by all simulations: shading, bloom, tonemap, grade, feedback trails."""
 from __future__ import annotations
 
+import os
+import moderngl
+
 from .gl_common import GL, Double, Target
 from .params import Param
 
@@ -19,6 +22,12 @@ POST_PARAMS: list[Param] = [
     Param("fb_zoom", "Feedback zoom", -0.05, 0.05, 0.004, group="Feedback"),
     Param("fb_rotate", "Feedback rotate (deg)", -5, 5, 0.0, group="Feedback"),
     Param("bg_value", "Background brightness", 0, 0.3, 0.0, group="Look"),
+    Param("bg_opacity", "BG Image Opacity", 0.0, 1.0, 1.0, group="Background",
+          tooltip="Opacity of loaded background image"),
+    Param("bg_blend", "BG Blend Mode", 0, 3, 0, step=1, integer=True, group="Background",
+          tooltip="0 = Underlay, 1 = Screen, 2 = Add, 3 = Multiply"),
+    Param("bg_fit", "BG Fit Mode", 0, 2, 0, step=1, integer=True, group="Background",
+          tooltip="0 = Cover (crop excess), 1 = Fit (letterbox), 2 = Stretch"),
 ]
 
 HDR_FS = """
@@ -65,13 +74,49 @@ void main(){
 
 FINAL_FS = """
 uniform sampler2D uHdr; uniform sampler2D uBloom1; uniform sampler2D uBloom2; uniform sampler2D uPrev;
+uniform sampler2D uBg; uniform int hasBg;
+uniform float bgOpacity; uniform int bgBlend; uniform int bgFit; uniform float bgAspect;
 uniform float exposure, contrast, saturation, hueRot, gamma, bloom, vignette, feedback, fbZoom, fbRot, bg, aspect;
+
 vec3 hueShift(vec3 c, float a){
     const vec3 k = vec3(0.57735);
     float ca = cos(a);
     return c * ca + cross(k, c) * sin(a) + k * dot(k, c) * (1.0 - ca);
 }
 vec3 aces(vec3 x){ return clamp((x*(2.51*x+0.03))/(x*(2.43*x+0.59)+0.14), 0.0, 1.0); }
+
+vec3 sampleBg(vec2 uv) {
+    if (hasBg == 0) return vec3(0.0);
+    vec2 p = uv - 0.5;
+    vec2 bgUv;
+    if (bgFit == 0) {
+        // Cover (crop excess, fill frame)
+        vec2 s = vec2(1.0);
+        if (aspect > bgAspect) {
+            s = vec2(1.0, bgAspect / aspect);
+        } else {
+            s = vec2(aspect / bgAspect, 1.0);
+        }
+        bgUv = p * s + 0.5;
+    } else if (bgFit == 1) {
+        // Fit (letterboxed)
+        vec2 s = vec2(1.0);
+        if (aspect > bgAspect) {
+            s = vec2(aspect / bgAspect, 1.0);
+        } else {
+            s = vec2(1.0, bgAspect / aspect);
+        }
+        bgUv = p * s + 0.5;
+        if (bgUv.x < 0.0 || bgUv.x > 1.0 || bgUv.y < 0.0 || bgUv.y > 1.0) {
+            return vec3(0.0);
+        }
+    } else {
+        // Stretch
+        bgUv = uv;
+    }
+    return texture(uBg, clamp(bgUv, 0.0, 1.0)).rgb;
+}
+
 void main(){
     vec3 c = texture(uHdr, vUv).rgb * exposure;
     c += (texture(uBloom1, vUv).rgb + texture(uBloom2, vUv).rgb) * bloom;
@@ -81,6 +126,27 @@ void main(){
     float l = dot(c, vec3(0.299, 0.587, 0.114));
     c = mix(vec3(l), c, saturation);
     c = (c - 0.5) * contrast + 0.5;
+
+    // Background Image Blending
+    if (hasBg == 1 && bgOpacity > 0.0) {
+        vec3 bgCol = sampleBg(vUv);
+        if (bgBlend == 0) {
+            // Underlay: liquid floating on top of background
+            float simDensity = clamp(dot(c, vec3(0.299, 0.587, 0.114)) * 1.5, 0.0, 1.0);
+            c = mix(bgCol, c, simDensity * bgOpacity) + c * (0.25 * bgOpacity);
+        } else if (bgBlend == 1) {
+            // Screen
+            vec3 screened = 1.0 - (1.0 - c) * (1.0 - bgCol);
+            c = mix(c, screened, bgOpacity);
+        } else if (bgBlend == 2) {
+            // Add
+            c = c + bgCol * bgOpacity;
+        } else if (bgBlend == 3) {
+            // Multiply
+            c = c * mix(vec3(1.0), bgCol, bgOpacity);
+        }
+    }
+
     c = max(c, vec3(bg));
     vec2 p = vUv - 0.5; p.x *= aspect;
     c *= clamp(1.0 - vignette * dot(p, p) * 1.2, 0.0, 1.0);
@@ -105,6 +171,37 @@ class PostFX:
         self.p_final = gl.pass_(FINAL_FS)
         self.size = None
         self.targets = []
+        self.bg_tex: moderngl.Texture | None = None
+        self.bg_path: str = ""
+        self.bg_aspect: float = 1.0
+        self.dummy_tex = gl.ctx.texture((1, 1), 4, dtype="f1", data=b"\x00\x00\x00\xff")
+
+    def set_background(self, path: str):
+        if self.bg_path == path and self.bg_tex is not None:
+            return
+        if self.bg_tex:
+            self.bg_tex.release()
+            self.bg_tex = None
+        self.bg_path = path or ""
+        if not path or not os.path.isfile(path):
+            self.bg_aspect = 1.0
+            return
+        try:
+            from PIL import Image, ImageOps
+            with Image.open(path) as img:
+                img = img.convert("RGBA")
+                img = ImageOps.flip(img)
+                w, h = img.size
+                self.bg_aspect = w / h if h > 0 else 1.0
+                data = img.tobytes()
+                self.bg_tex = self.gl.ctx.texture((w, h), 4, data=data)
+                self.bg_tex.filter = (moderngl.LINEAR, moderngl.LINEAR)
+                self.bg_tex.repeat_x = False
+                self.bg_tex.repeat_y = False
+        except Exception as e:
+            print(f"Error loading background image {path}: {e}")
+            self.bg_tex = None
+            self.bg_aspect = 1.0
 
     def ensure(self, w, h):
         if self.size == (w, h):
@@ -144,13 +241,22 @@ class PostFX:
             self._blur(self.b2)
         # feedback is defined per 60 fps frame; scale it so look is fps-independent
         fb = v["feedback"] ** (dt * 60.0) if v["feedback"] > 0 else 0.0
+
+        bg_tex = self.bg_tex if self.bg_tex is not None else self.dummy_tex
+        has_bg = 1 if self.bg_tex is not None else 0
+        bg_opacity = float(v.get("bg_opacity", 1.0))
+        bg_blend = int(round(v.get("bg_blend", 0)))
+        bg_fit = int(round(v.get("bg_fit", 0)))
+
         self.p_final.run(self.frame.write.fbo,
                          dict(uHdr=self.hdr.tex, uBloom1=self.b1.read.tex, uBloom2=self.b2.read.tex,
-                              uPrev=self.frame.read.tex),
+                              uPrev=self.frame.read.tex, uBg=bg_tex),
                          exposure=v["exposure"], contrast=v["contrast"], saturation=v["saturation"],
                          hueRot=v["hue_rotate"], gamma=v["gamma"], bloom=v["bloom"] if v["bloom"] > 0 else 0.0,
                          vignette=v["vignette"], feedback=fb, fbZoom=v["fb_zoom"] * dt * 60.0,
-                         fbRot=v["fb_rotate"] * dt * 60.0, bg=v["bg_value"], aspect=w / h)
+                         fbRot=v["fb_rotate"] * dt * 60.0, bg=v["bg_value"], aspect=w / h,
+                         hasBg=has_bg, bgOpacity=bg_opacity, bgBlend=bg_blend, bgFit=bg_fit,
+                         bgAspect=self.bg_aspect)
         self.frame.swap()
         return self.frame.read
 
@@ -159,4 +265,10 @@ class PostFX:
             t.release()
         for p in (self.p_hdr, self.p_bright, self.p_blur, self.p_final):
             p.release()
+        if self.bg_tex:
+            self.bg_tex.release()
+            self.bg_tex = None
+        if self.dummy_tex:
+            self.dummy_tex.release()
+            self.dummy_tex = None
 

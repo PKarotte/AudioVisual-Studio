@@ -97,6 +97,7 @@ class Project:
         self.grid = dict(cols=16, rows=9, snap=True)
         self.aspect = (16, 9)
         self.master_volume = 0.8
+        self.bg_image_path: str = ""
         self.render = dict(RENDER_DEFAULTS)
         self._next_uid = 1
 
@@ -181,6 +182,7 @@ class Project:
             post_values=self.post_values, spawners=[asdict(s) for s in self.spawners],
             routes=[asdict(r) for r in self.routes], stems=[asdict(s) for s in self.stems],
             grid=self.grid, aspect=list(self.aspect), master_volume=self.master_volume,
+            bg_image_path=self.bg_image_path,
             render=self.render, next_uid=self._next_uid)
 
     @classmethod
@@ -189,6 +191,7 @@ class Project:
         p.sim_name = d.get("sim_name", p.sim_name)
         p.sim_values = copy.deepcopy(d.get("sim_values", {}))
         p.post_values = copy.deepcopy(d.get("post_values", {}))
+        p.bg_image_path = d.get("bg_image_path", "")
         for sd in d.get("spawners", []):
             params = defaults(SPAWNER_PARAMS)
             params.update(sd.get("params", {}))

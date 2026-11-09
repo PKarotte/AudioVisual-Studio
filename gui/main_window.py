@@ -276,6 +276,32 @@ class MainWindow(QMainWindow):
         # TAB 4: Post FX / Shading / Bloom / Feedback
         tab_fx = QWidget()
         fx_layout = QVBoxLayout(tab_fx)
+        fx_layout.setContentsMargins(6, 6, 6, 6)
+
+        # Background Image Control
+        grp_bg = QGroupBox("🖼️ Background Image")
+        grp_bg_layout = QVBoxLayout(grp_bg)
+        grp_bg_layout.setSpacing(6)
+
+        bg_btn_row = QHBoxLayout()
+        btn_choose_bg = QPushButton("📁 Choose Image...")
+        btn_choose_bg.setStyleSheet("padding: 5px; font-weight: bold;")
+        btn_choose_bg.clicked.connect(self._on_choose_bg_image)
+        bg_btn_row.addWidget(btn_choose_bg)
+
+        btn_clear_bg = QPushButton("❌ Clear")
+        btn_clear_bg.setStyleSheet("padding: 5px;")
+        btn_clear_bg.clicked.connect(self._on_clear_bg_image)
+        bg_btn_row.addWidget(btn_clear_bg)
+        grp_bg_layout.addLayout(bg_btn_row)
+
+        self.lbl_bg_filename = QLabel("No background image selected")
+        self.lbl_bg_filename.setStyleSheet("color: #8892b0; font-size: 11px;")
+        self.lbl_bg_filename.setWordWrap(True)
+        grp_bg_layout.addWidget(self.lbl_bg_filename)
+
+        fx_layout.addWidget(grp_bg)
+
         scroll_fx = QScrollArea()
         scroll_fx.setWidgetResizable(True)
         self.panel_fx = ParamPanel()
@@ -431,8 +457,39 @@ class MainWindow(QMainWindow):
         vals = self.project.sim_values.setdefault(self.project.sim_name, {})
         vals[key] = val
 
+    def _update_bg_label(self):
+        p = getattr(self.project, "bg_image_path", "")
+        if p and os.path.isfile(p):
+            self.lbl_bg_filename.setText(f"File: {os.path.basename(p)}")
+            self.lbl_bg_filename.setToolTip(p)
+            self.lbl_bg_filename.setStyleSheet("color: #64ffda; font-weight: bold; font-size: 11px;")
+        elif p:
+            self.lbl_bg_filename.setText(f"Missing: {os.path.basename(p)}")
+            self.lbl_bg_filename.setToolTip(p)
+            self.lbl_bg_filename.setStyleSheet("color: #ff6b6b; font-size: 11px;")
+        else:
+            self.lbl_bg_filename.setText("No background image selected")
+            self.lbl_bg_filename.setToolTip("")
+            self.lbl_bg_filename.setStyleSheet("color: #8892b0; font-size: 11px;")
+
+    def _on_choose_bg_image(self):
+        path, _ = QFileDialog.getOpenFileName(
+            self, "Choose Background Image", "",
+            "Images (*.png *.jpg *.jpeg *.bmp *.webp);;All Files (*)"
+        )
+        if path:
+            self.project.bg_image_path = os.path.abspath(path)
+            self._update_bg_label()
+            self.viewport.update()
+
+    def _on_clear_bg_image(self):
+        self.project.bg_image_path = ""
+        self._update_bg_label()
+        self.viewport.update()
+
     def _refresh_fx_ui(self):
         self.panel_fx.build(POST_PARAMS, self.project.post_values, project=self.project, target_type="post")
+        self._update_bg_label()
 
     def _on_fx_param_changed(self, key: str, val: float):
         self.project.post_values[key] = val
@@ -802,6 +859,18 @@ class MainWindow(QMainWindow):
                             print(f"Notice: Could not copy audio to project directory: {e}")
                     stem.path = os.path.basename(orig_path)
 
+        # Copy background image into project directory if not already there
+        if getattr(self.project, "bg_image_path", ""):
+            bg_orig = os.path.abspath(self.project.bg_image_path)
+            if os.path.exists(bg_orig):
+                bg_dest = os.path.join(project_dir, os.path.basename(bg_orig))
+                if os.path.abspath(bg_orig) != os.path.abspath(bg_dest):
+                    try:
+                        shutil.copy2(bg_orig, bg_dest)
+                    except Exception as e:
+                        print(f"Notice: Could not copy background image to project directory: {e}")
+                self.project.bg_image_path = os.path.basename(bg_orig)
+
         self.project.grid["cols"] = self.spin_grid_cols.value()
         self.project.grid["rows"] = self.spin_grid_rows.value()
         self.project.save(path)
@@ -827,6 +896,18 @@ class MainWindow(QMainWindow):
 
         # Reload the audio and feature matrices
         self._reload_audio_from_project(project_dir)
+
+        # Resolve background image path
+        if getattr(self.project, "bg_image_path", ""):
+            bg = self.project.bg_image_path
+            if not os.path.isabs(bg):
+                cand = os.path.join(project_dir, bg)
+                if os.path.exists(cand):
+                    self.project.bg_image_path = cand
+            elif not os.path.exists(bg):
+                cand = os.path.join(project_dir, os.path.basename(bg))
+                if os.path.exists(cand):
+                    self.project.bg_image_path = cand
 
         # Restore UI
         self.combo_sim.blockSignals(True)
