@@ -1,22 +1,22 @@
 """
-Executable entry point for Liquid Studio.
+Executable entry point for AudioVisual Studio.
 Enables running via:
-  python run.py  (from inside LiquidStudio folder)
-  python -m LiquidStudio (from parent AudioVisual folder)
+  python run.py
+  python -m <folder_name>
 """
 import sys
 import os
 
-# Ensure root (parent of LiquidStudio) is on sys.path
-root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-if root_dir not in sys.path:
-    sys.path.insert(0, root_dir)
+this_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(this_dir)
+for p in (this_dir, parent_dir):
+    if p not in sys.path:
+        sys.path.insert(0, p)
 
-from PySide6.QtWidgets import QApplication
-from PySide6.QtCore import Qt
-from PySide6.QtGui import QPalette, QColor
+from run import main
 
-from LiquidStudio.gui.main_window import MainWindow
+if __name__ == "__main__":
+    main()
 
 
 def setup_dark_theme(app: QApplication):

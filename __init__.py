@@ -1,3 +1,3 @@
-"""Liquid Studio Application Package."""
+"""AudioVisual Studio Application Package."""
 __version__ = "1.0.0"
 

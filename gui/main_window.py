@@ -1,5 +1,5 @@
 """
-Liquid Studio Main Window.
+AudioVisual Studio Main Window.
 Coordinates Viewport, Draggable Canvas, Simulation Plugins, Sliders,
 Color Wheel, Audio stems playback, and Modulation Matrix.
 """
@@ -38,7 +38,7 @@ from .render_dialog import RenderDialog
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Liquid Studio — Audio-Reactive GPU Simulation Engine")
+        self.setWindowTitle("AudioVisual Studio — Audio-Reactive GPU Simulation Engine")
         self.resize(1600, 950)
 
         self.project = Project()
@@ -358,7 +358,7 @@ class MainWindow(QMainWindow):
         if not hasattr(self, "popout_dialog") or self.popout_dialog is None:
             from PySide6.QtWidgets import QDialog
             self.popout_dialog = QDialog(self)
-            self.popout_dialog.setWindowTitle("Liquid Studio — Floating Live Preview")
+            self.popout_dialog.setWindowTitle("AudioVisual Studio — Floating Live Preview")
             self.popout_dialog.resize(960, 540)
             pop_layout = QVBoxLayout(self.popout_dialog)
             pop_layout.setContentsMargins(0, 0, 0, 0)
