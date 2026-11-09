@@ -10,6 +10,15 @@ AudioVisual Studio is an open-source visual synthesizer and motion graphics tool
 
 ---
 
+## 🎬 Showcase
+
+[![Inward — Audio-Reactive GPU Fluid Simulation](https://img.youtube.com/vi/UxZVmMNwRcY/maxresdefault.jpg)](https://www.youtube.com/watch?v=UxZVmMNwRcY)
+
+> 🎥 **[Watch the full showcase on YouTube](https://www.youtube.com/watch?v=UxZVmMNwRcY)**  
+> *"Inward" — Music by Daniela Helten & Pascal Karitter, visualized in real time with AudioVisual Studio.*
+
+---
+
 ## ✨ Features
 
 - **Incompressible Navier-Stokes Solver**: Real-time Eulerian grid fluid solver based on Jos Stam's unconditionally stable semi-Lagrangian advection and GPU Jacobi pressure projection.
